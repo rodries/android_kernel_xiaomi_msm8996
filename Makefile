@@ -398,7 +398,7 @@ LINUXINCLUDE    := \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-KBUILD_CFLAGS   := -Werror -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
@@ -618,13 +618,30 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-PIE)
 KBUILD_AFLAGS	+= $(call cc-option,-fno-PIE)
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS	+= -Os
 else
 KBUILD_CFLAGS	+= -O2
 endif
 
+KBUILD_CFLAGS   += $(call cc-disable-warning,maybe-uninitialized,)
+
 # Tell gcc to never replace conditional load with a non-conditional one
 KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
+
+# Needed to unbreak GCC 7.x and above
+KBUILD_CFLAGS   += $(call cc-option,-fno-store-merging,)
+
+# GCX 7 Compilation
+KBUILD_CFLAGS	+= $(call cc-disable-warning,misleading-indentation)
+KBUILD_CFLAGS	+= $(call cc-disable-warning,bool-operation)
+KBUILD_CFLAGS	+= $(call cc-disable-warning,switch-unreachable)
+
+# GCC 9 Compilation
+KBUILD_CFLAGS   += $(call cc-disable-warning,attribute-alias)
+KBUILD_CFLAGS   += $(call cc-disable-warning,packed-not-aligned)
+KBUILD_CFLAGS   += $(call cc-disable-warning,sizeof-pointer-memaccess)
+KBUILD_CFLAGS   += $(call cc-disable-warning,stringop-truncation)
+KBUILD_CFLAGS   += $(call cc-disable-warning,stringop-overflow)
 
 ifdef CONFIG_READABLE_ASM
 # Disable optimizations that make assembler listings hard to read.
